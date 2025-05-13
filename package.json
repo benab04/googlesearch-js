@@ -1,0 +1,41 @@
+{
+  "name": "googlesearch-js",
+  "version": "1.0.0",
+  "description": "A JavaScript library for searching Google, easily",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint src/"
+  },
+  "keywords": [
+    "google",
+    "search",
+    "web",
+    "scraping",
+    "api"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benab04/googlesearch-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/benab04/googlesearch-js/issues"
+  },
+  "homepage": "https://github.com/benab04/googlesearch-js#readme",
+  "dependencies": {
+    "node-fetch": "^2.6.7",
+    "jsdom": "^20.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.14.0",
+    "jest": "^28.0.3",
+    "babel-jest": "^28.0.3",
+    "@babel/core": "^7.17.10",
+    "@babel/preset-env": "^7.17.10"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  }
+}
