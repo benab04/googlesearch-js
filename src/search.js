@@ -2,7 +2,7 @@
  * Google search implementation
  */
 const fetch = require('node-fetch');
-const { JSDOM } = require('jsdom');
+const cheerio = require('cheerio');
 const { SearchResult } = require('./models');
 const { getUserAgent } = require('./user-agents');
 
@@ -113,39 +113,44 @@ async function* search(term, {
             region
         );
 
-        // Parse response with JSDOM
-        const { document } = new JSDOM(responseText).window;
-        const resultBlocks = document.querySelectorAll("div.ezO2md");
+        // Parse response with cheerio
+        const $ = cheerio.load(responseText);
+        const resultBlocks = $("div.ezO2md");
 
         let newResults = 0;
 
-        for (const result of resultBlocks) {
+        resultBlocks.each((index, element) => {
+            // If we already have enough results, break early
+            if (fetchedResults >= numResults) {
+                return false; // break the loop
+            }
+
             // Find the link tag within the result block
-            const linkTag = result.querySelector("a[href]");
+            const linkTag = $(element).find("a[href]");
             // Find the title tag within the link tag
-            const titleTag = linkTag ? linkTag.querySelector("span.CVA68e") : null;
+            const titleTag = linkTag.find("span.CVA68e");
             // Find the description tag within the result block
-            const descriptionTag = result.querySelector("span.FrIlee");
+            const descriptionTag = $(element).find("span.FrIlee");
 
             // Check if all necessary tags are found
-            if (linkTag && titleTag && descriptionTag) {
+            if (linkTag.length && titleTag.length && descriptionTag.length) {
                 // Extract and decode the link URL
-                const href = linkTag.getAttribute("href");
+                const href = linkTag.attr("href");
                 const link = decodeURIComponent(href.split("&")[0].replace("/url?q=", ""));
 
                 // Check if the link has already been fetched and if unique results are required
                 if (fetchedLinks.has(link) && unique) {
-                    continue; // Skip this result if the link is not unique
+                    return true; // continue to next result
                 }
 
                 // Add the link to the set of fetched links
                 fetchedLinks.add(link);
 
                 // Extract the title text
-                const title = titleTag ? titleTag.textContent : "";
+                const title = titleTag.text();
 
                 // Extract the description text
-                const description = descriptionTag ? descriptionTag.textContent : "";
+                const description = descriptionTag.text();
 
                 // Increment the count of fetched results
                 fetchedResults++;
@@ -153,17 +158,22 @@ async function* search(term, {
                 // Increment the count of new results in this iteration
                 newResults++;
 
-                // Yield the result based on the advanced flag
+                // Store the result to yield it later (since we can't yield inside an each() callback)
                 if (advanced) {
-                    yield new SearchResult(link, title, description); // Yield a SearchResult object
+                    this.yieldValue = new SearchResult(link, title, description);
                 } else {
-                    yield link; // Yield only the link
+                    this.yieldValue = link;
                 }
 
-                if (fetchedResults >= numResults) {
-                    break; // Stop if we have fetched the desired number of results
-                }
+                // Yield value outside of the loop
+                return false; // break the loop after finding a result
             }
+        });
+
+        // Yield the stored value if there is one
+        if (this.yieldValue) {
+            yield this.yieldValue;
+            this.yieldValue = null;
         }
 
         if (newResults === 0) {

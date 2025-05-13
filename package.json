@@ -26,14 +26,11 @@
   "homepage": "https://github.com/benab04/googlesearch-js#readme",
   "dependencies": {
     "node-fetch": "^2.6.7",
-    "jsdom": "^20.0.0"
+    "cheerio": "^1.0.0-rc.12"
   },
   "devDependencies": {
     "eslint": "^8.14.0",
-    "jest": "^28.0.3",
-    "babel-jest": "^28.0.3",
-    "@babel/core": "^7.17.10",
-    "@babel/preset-env": "^7.17.10"
+    "jest": "^28.0.3"
   },
   "engines": {
     "node": ">=12.0.0"
